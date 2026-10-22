@@ -1,0 +1,336 @@
+<section
+  class="info-tabs"
+  data-info-tabs
+>
+  <div class="info-tabs__nav">
+    <button
+      class="info-tabs__button is-active"
+      type="button"
+      data-tab-button="description"
+      aria-expanded="true"
+    >
+      <span class="info-tabs__title"> Description </span>
+
+      <span
+        class="info-tabs__icon"
+        aria-hidden="true"
+      ></span>
+    </button>
+
+    <button
+      class="info-tabs__button"
+      type="button"
+      data-tab-button="who-is-it-for"
+      aria-expanded="false"
+    >
+      <span class="nfo-tabs__title"> Who Is It For? </span>
+
+      <span
+        class="info-tabs__icon"
+        aria-hidden="true"
+      ></span>
+    </button>
+
+    <button
+      class="info-tabs__button"
+      type="button"
+      data-tab-button="shipping"
+      aria-expanded="false"
+    >
+      <span class="info-tabs__title"> Shipping & Returns </span>
+
+      <span
+        class="info-tabs__icon"
+        aria-hidden="true"
+      ></span>
+    </button>
+
+    <button
+      class="info-tabs__button"
+      type="button"
+      data-tab-button="care"
+      aria-expanded="false"
+    >
+      <span class="info-tabs__title"> Ingredients </span>
+
+      <span
+        class="info-tabs__icon"
+        aria-hidden="true"
+      ></span>
+    </button>
+  </div>
+
+  <div class="info-tabs__content">
+    <div
+      class="info-tabs__panel is-active"
+      data-tab-panel="description"
+    >
+      {{ product.metafields.custom.description | metafield_tag }}
+    </div>
+
+    <div
+      class="info-tabs__panel"
+      data-tab-panel="who-is-it-for"
+    >
+      {{ product.metafields.custom.who_is_it_for | metafield_tag }}
+    </div>
+
+    <div
+      class="info-tabs__panel"
+      data-tab-panel="shipping"
+    >
+      {{ product.metafields.custom.shipping_returns | metafield_tag }}
+    </div>
+
+    <div
+      class="info-tabs__panel"
+      data-tab-panel="care"
+    >
+      {{ product.metafields.custom.key_active_ingredients | metafield_tag }}
+    </div>
+  </div>
+</section>
+
+<style>
+  .info-tabs {
+    width: 100%;
+  }
+
+  .info-tabs__nav {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid var(--primary-text-color);
+  }
+
+  .info-tabs__button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    padding: 10px 16px 14px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+  }
+
+  .info-tabs__button:first-child {
+    justify-content: flex-start;
+    padding-left: 0;
+    text-align: left;
+  }
+
+  .info-tabs__button:last-child {
+    justify-content: flex-end;
+    padding-right: 0;
+    text-align: right;
+  }
+
+  .info-tabs__title {
+    font-size: var(--font-size--md);
+    font-family: var(--font-secondary);
+    line-height: 1.1;
+    color: rgba(49, 51, 30, 0.5);
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
+
+  .info-tabs__button:hover .info-tabs__title,
+  .info-tabs__button.is-active .info-tabs__title {
+    color: var(--primary-text-color);
+  }
+
+  .info-tabs__button.is-active::before {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -8px;
+    left: -3px;
+    height: 13px;
+    background: var(--primary-text-color);
+    border-radius: 32px;
+    transition: transform ease-in-out 0.25s;
+  }
+
+  .info-tabs__button:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: 1px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary-text-color);
+    transform: translate(50%, -50%);
+  }
+
+  .info-tabs__icon {
+    display: none;
+  }
+
+  .info-tabs__content {
+    width: 100%;
+    padding: 24px 0 0;
+  }
+
+  .info-tabs__panel {
+    display: none;
+    font-size: var(--font-size--sm);
+    font-family: var(--font-secondary);
+    width: 100%;
+    line-height: 1.1;
+    color: #333;
+  }
+
+  .info-tabs__panel.is-active {
+    display: block;
+  }
+
+  .info-tabs__panel p {
+    margin: 0 0 16px;
+  }
+
+  .info-tabs__panel p:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-tabs__panel ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .info-tabs__panel li + li {
+    margin-top: 8px;
+  }
+
+  .info-tabs__panel strong {
+    font-weight: 600;
+  }
+
+  @media screen and (max-width: 767px) {
+    .info-tabs__nav {
+      display: block;
+      border-bottom: 0;
+      padding-right: 20px;
+    }
+
+    .info-tabs__button {
+      justify-content: space-between !important;
+      width: 100%;
+      min-height: 52px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--primary-text-color);
+      text-align: left !important;
+    }
+
+    .info-tabs__button:first-child,
+    .info-tabs__button:last-child {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .info-tabs__button::before {
+      display: none;
+    }
+
+    .info-tabs__button:not(:last-child)::after {
+      display: none;
+    }
+
+    .info-tabs__icon {
+      position: relative;
+      display: block;
+      width: 14px;
+      height: 14px;
+      flex: 0 0 14px;
+    }
+
+    .info-tabs__icon::before,
+    .info-tabs__icon::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 2px;
+      background: rgba(0, 0, 0, 1);
+      transform: translate(-50%, -50%);
+    }
+
+    .info-tabs__icon::after {
+      transform: translate(-50%, -50%) rotate(90deg);
+      transition: transform 0.2s ease;
+    }
+
+    .info-tabs__button.is-active .info-tabs__icon::after {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    .info-tabs__content {
+      padding: 0 20px 0 0;
+    }
+
+    .info-tabs__panel {
+      padding: 16px 0 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .info-tabs__panel:not(.is-active) {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const containers = document.querySelectorAll('[data-info-tabs]');
+
+    containers.forEach(function (container) {
+      const buttons = container.querySelectorAll('[data-tab-button]');
+      const panels = container.querySelectorAll('[data-tab-panel]');
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const target = button.dataset.tabButton;
+          const isMobile = window.innerWidth < 768;
+          const isActive = button.classList.contains('is-active');
+
+          if (isMobile && isActive) {
+            button.classList.remove('is-active');
+            button.setAttribute('aria-expanded', 'false');
+
+            const panel = container.querySelector('[data-tab-panel="' + target + '"]');
+
+            if (panel) {
+              panel.classList.remove('is-active');
+            }
+
+            return;
+          }
+
+          buttons.forEach(function (item) {
+            item.classList.remove('is-active');
+            item.setAttribute('aria-expanded', 'false');
+          });
+
+          panels.forEach(function (panel) {
+            panel.classList.remove('is-active');
+          });
+
+          button.classList.add('is-active');
+          button.setAttribute('aria-expanded', 'true');
+
+          const panel = container.querySelector('[data-tab-panel="' + target + '"]');
+
+          if (panel) {
+            panel.classList.add('is-active');
+          }
+        });
+      });
+    });
+  });
+</script>

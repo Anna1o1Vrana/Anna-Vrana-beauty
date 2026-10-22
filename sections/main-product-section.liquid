@@ -1,0 +1,593 @@
+{{ 'main-product-section.css' | asset_url | stylesheet_tag }}
+
+<style>
+  @font-face {
+    font-family: "Recoleta";
+    src: url("{{ 'Recoleta Regular.woff2' | asset_url }}") format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
+
+{% liquid
+  assign product_resource = closest.product | default: product
+
+  if product_resource == blank
+    assign product_resource = product
+  endif
+
+  assign current_variant = product_resource.selected_or_first_available_variant
+  assign compare_at_price = current_variant.compare_at_price
+  assign variant_price = current_variant.price
+  assign show_compare = false
+  assign savings_amount = 0
+  assign savings_percent = 0
+
+  if compare_at_price > variant_price
+    assign show_compare = true
+    assign savings_amount = compare_at_price | minus: variant_price
+    assign savings_percent = savings_amount | times: 100.0 | divided_by: compare_at_price | round
+  endif
+
+  assign summary = blank
+  assign summary_metafield = product_resource.metafields[section.settings.summary_metafield_namespace][section.settings.summary_metafield_key]
+
+  if summary_metafield != blank
+    assign summary = summary_metafield.value
+  endif
+
+  if summary == blank and section.settings.summary != blank
+    assign summary = section.settings.summary
+  endif
+
+  assign show_limited_stock = false
+
+  if section.settings.show_limited_stock_badge and current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity > 0 and current_variant.inventory_quantity <= section.settings.limited_stock_threshold
+    assign show_limited_stock = true
+  endif
+
+  assign has_benefits = false
+
+  if section.settings.benefit_1_text != blank or section.settings.benefit_2_text != blank or section.settings.benefit_3_text != blank or section.settings.benefit_4_text != blank or section.settings.benefit_5_text != blank or section.settings.benefit_6_text != blank
+    assign has_benefits = true
+  endif
+%}
+
+{% capture media_gallery %}
+  {% content_for 'block',
+    type: '_product-media-gallery',
+    id: 'media-gallery',
+    closest.product: product_resource
+  %}
+{% endcapture %}
+
+{% capture media_column %}
+  <div class="main-product-custom__media-wrap">
+    <div class="main-product-custom__media-inner">
+      {{ media_gallery }}
+    </div>
+
+    <div
+      class="main-product-custom__trust-bar"
+      role="region"
+      aria-label="{{ section.settings.trust_bar_aria_label | escape }}"
+      style="--product-custom-trust-desktop-anchor: {{ section.settings.trust_bar_desktop_anchor_percent }}%;"
+    >
+      <ul class="main-product-custom__trust-list list-unstyled">
+        {% content_for 'blocks', closest.product: product_resource %}
+      </ul>
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture product_details %}
+  <div
+    id="ProductInformation-{{ section.id }}"
+    class="main-product-custom__details product-details"
+    data-testid="product-custom-details"
+  >
+    <h1 class="main-product-custom__title">
+      {{ product_resource.title | escape }}
+    </h1>
+
+    {% if show_limited_stock or section.settings.viewing_message != blank %}
+      <div
+        class="main-product-custom__badges"
+        aria-label="Product highlights"
+      >
+        {% if show_limited_stock %}
+          <span class="main-product-custom__badge main-product-custom__badge--stock">
+            <span
+              class="main-product-custom__badge-icon main-product-custom__badge-icon--stock"
+              aria-hidden="true"
+            ></span>
+            {{ section.settings.limited_stock_label | escape }}
+          </span>
+        {% endif %}
+
+        {% if section.settings.viewing_message != blank %}
+          <span class="main-product-custom__badge main-product-custom__badge--viewing">
+            <span
+              class="main-product-custom__badge-icon main-product-custom__badge-icon--viewing"
+              aria-hidden="true"
+            ></span>
+            {{ section.settings.viewing_message | escape }}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if summary != blank %}
+      <div class="main-product-custom__summary rte">
+        {{ summary }}
+      </div>
+    {% endif %}
+
+    <div class="main-product-custom__price-row">
+      <product-price
+        class="main-product-custom__price"
+        data-block-id="{{ section.id }}-custom-price"
+        data-product-id="{{ product_resource.id }}"
+      >
+        {% render 'price',
+          product_resource: product_resource,
+          show_sale_price_first: section.settings.show_sale_price_first
+        %}
+
+        {% if show_compare and section.settings.show_savings_badge %}
+          <span class="main-product-custom__savings-badge">
+            {% if section.settings.savings_display == 'percent' %}
+              Save {{ savings_percent }}% OFF
+            {% else %}
+              Save {{ savings_amount | money }} OFF
+            {% endif %}
+          </span>
+        {% endif %}
+      </product-price>
+    </div>
+
+    {% if has_benefits %}
+      <div class="main-product-custom__benefits">
+        {% if section.settings.benefits_heading != blank %}
+          <h2 class="main-product-custom__benefits-title">
+            {{ section.settings.benefits_heading | escape }}
+          </h2>
+        {% endif %}
+
+        <div class="main-product-custom__benefits-grid">
+          {% if section.settings.benefit_1_text != blank or section.settings.benefit_1_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_1_icon != blank %}
+                {{
+                  section.settings.benefit_1_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_1_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_1_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.benefit_2_text != blank or section.settings.benefit_2_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_2_icon != blank %}
+                {{
+                  section.settings.benefit_2_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_2_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_2_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.benefit_3_text != blank or section.settings.benefit_3_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_3_icon != blank %}
+                {{
+                  section.settings.benefit_3_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_3_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_3_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.benefit_4_text != blank or section.settings.benefit_4_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_4_icon != blank %}
+                {{
+                  section.settings.benefit_4_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_4_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_4_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.benefit_5_text != blank or section.settings.benefit_5_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_5_icon != blank %}
+                {{
+                  section.settings.benefit_5_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_5_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_5_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.benefit_6_text != blank or section.settings.benefit_6_icon != blank %}
+            <div class="main-product-custom__benefit">
+              {% if section.settings.benefit_6_icon != blank %}
+                {{
+                  section.settings.benefit_6_icon
+                  | image_url: width: 64
+                  | image_tag:
+                    class: 'main-product-custom__benefit-icon',
+                    loading: 'lazy',
+                    alt: ''
+                }}
+              {% endif %}
+
+              {% if section.settings.benefit_6_text != blank %}
+                <div class="main-product-custom__benefit-text">
+                  {{ section.settings.benefit_6_text | escape | newline_to_br }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="main-product-custom__buy-button">
+      {% render 'add-to-cart-button-with-form', product: product_resource %}
+    </div>
+
+
+    {% render 'info-tabs', product: product_resource, %}
+    
+  </div>
+{% endcapture %}
+
+{% render 'deferred-media-product-model-styles' %}
+{% render 'deferred-media-video-styles' %}
+{% render 'price-styles' %}
+
+{% render 'product-information-content',
+  product: product_resource,
+  section_id: section.id,
+  settings: section.settings,
+  media_gallery: media_column,
+  product_details: product_details,
+  additional_blocks: ''
+%}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script type="application/ld+json">
+  {{ product_resource | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Main custom product",
+  "tag": "section",
+  "class": "main-product-custom",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "content-center-aligned",
+          "label": "Page width"
+        },
+        {
+          "value": "content-full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "content-center-aligned"
+    },
+    {
+      "type": "select",
+      "id": "desktop_media_position",
+      "label": "Media position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "equal_columns",
+      "label": "Equal columns",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_details_width",
+      "label": "Limit product details width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Product summary"
+    },
+    {
+      "type": "text",
+      "id": "summary_metafield_namespace",
+      "label": "Summary metafield namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "summary_metafield_key",
+      "label": "Summary metafield key",
+      "default": "summary"
+    },
+    {
+      "type": "richtext",
+      "id": "summary",
+      "label": "Summary fallback (theme editor)",
+      "info": "Used when the product metafield is empty."
+    },
+    {
+      "type": "header",
+      "content": "Badges"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_limited_stock_badge",
+      "label": "Show limited stock badge",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "limited_stock_threshold",
+      "label": "Limited stock threshold",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "text",
+      "id": "limited_stock_label",
+      "label": "Limited stock label",
+      "default": "Limited Stock"
+    },
+    {
+      "type": "text",
+      "id": "viewing_message",
+      "label": "Viewing message",
+      "info": "Static merchandising copy only. Leave blank to hide."
+    },
+    {
+      "type": "header",
+      "content": "Pricing"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_price_first",
+      "label": "Show sale price before compare-at price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_savings_badge",
+      "label": "Show savings badge",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "savings_display",
+      "label": "Savings badge format",
+      "options": [
+        {
+          "value": "amount",
+          "label": "Dollar amount"
+        },
+        {
+          "value": "percent",
+          "label": "Percent"
+        }
+      ],
+      "default": "amount"
+    },
+    {
+      "type": "header",
+      "content": "Benefits"
+    },
+    {
+      "type": "text",
+      "id": "benefits_heading",
+      "label": "Benefits heading",
+      "default": "Why you need this?"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_1_icon",
+      "label": "Benefit 1 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_1_text",
+      "label": "Benefit 1 text"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_2_icon",
+      "label": "Benefit 2 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_2_text",
+      "label": "Benefit 2 text"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_3_icon",
+      "label": "Benefit 3 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_3_text",
+      "label": "Benefit 3 text"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_4_icon",
+      "label": "Benefit 4 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_4_text",
+      "label": "Benefit 4 text"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_5_icon",
+      "label": "Benefit 5 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_5_text",
+      "label": "Benefit 5 text"
+    },
+    {
+      "type": "image_picker",
+      "id": "benefit_6_icon",
+      "label": "Benefit 6 icon"
+    },
+    {
+      "type": "textarea",
+      "id": "benefit_6_text",
+      "label": "Benefit 6 text"
+    },
+
+    {
+      "type": "header",
+      "content": "Trust bar overlay"
+    },
+    {
+      "type": "text",
+      "id": "trust_bar_aria_label",
+      "label": "Trust bar accessibility label",
+      "default": "Product benefits"
+    },
+    {
+      "type": "range",
+      "id": "trust_bar_desktop_anchor_percent",
+      "label": "Desktop overlay anchor (top % of media column)",
+      "info": "Adjust so the bar sits on the hero image when using a large first gallery image.",
+      "min": 25,
+      "max": 75,
+      "step": 1,
+      "unit": "%",
+      "default": 42
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_block_start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_block_end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom product"
+    }
+  ]
+}
+{% endschema %}
